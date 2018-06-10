@@ -18,30 +18,28 @@ type LightController interface {
 	GroupOn(string)
 	GroupOff(string)
 	GroupCommandChannel(string) chan string
+	GroupNameIDMapping() map[string]string
 }
 
 // NewLightController returns a LightController with info about the HUE bridge
 func NewLightController(username, host string) LightController {
-	var groupNameIDMap map[string]string
-	c := controller{username, host, groupNameIDMap}
-	c.groupNameIDMap = c.GroupNameIDMapping()
+	c := controller{username, host}
 	return c
 }
 
 type controller struct {
-	username       string
-	host           string
-	groupNameIDMap map[string]string
+	username string
+	host     string
 }
 
-func (c controller) GroupOn(name string) {
-	url := c.hueGroupActionURLForName(name)
+func (c controller) GroupOn(id string) {
+	url := c.hueGroupActionURL(id)
 	body := hueActionOnJSONBody()
 	c.hueMakeActionPutRequest(url, body)
 }
 
-func (c controller) GroupOff(name string) {
-	url := c.hueGroupActionURLForName(name)
+func (c controller) GroupOff(id string) {
+	url := c.hueGroupActionURL(id)
 	body := hueActionOffJSONBody()
 	c.hueMakeActionPutRequest(url, body)
 }
@@ -96,11 +94,6 @@ func (c controller) hueGroupListURL() string {
 func (c controller) hueGroupActionURL(groupID string) string {
 	format := "%s/groups/%s/action"
 	return fmt.Sprintf(format, c.hueURL(), groupID)
-}
-
-func (c controller) hueGroupActionURLForName(name string) string {
-	groupID := c.groupNameIDMap[name]
-	return c.hueGroupActionURL(groupID)
 }
 
 func (c controller) hueMakeActionPutRequest(url string, body io.Reader) {
