@@ -44,15 +44,15 @@ func (c controller) GroupOff(id string) {
 	c.hueMakeActionPutRequest(url, body)
 }
 
-func (c controller) GroupCommandChannel(name string) chan string {
+func (c controller) GroupCommandChannel(id string) chan string {
 	commands := make(chan string)
 	go func() {
 		for cmd := range commands {
 			switch cmd {
 			case "on":
-				c.GroupOn(name)
+				c.GroupOn(id)
 			case "off":
-				c.GroupOff(name)
+				c.GroupOff(id)
 			}
 		}
 	}()
