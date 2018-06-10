@@ -18,7 +18,7 @@ type LightController interface {
 	GroupOn(string)
 	GroupOff(string)
 	GroupCommandChannel(string) chan string
-	GroupNameIDMapping() map[string]string
+	GroupNameCommandChannels() map[string]chan string
 }
 
 // NewLightController returns a LightController with info about the HUE bridge
@@ -59,7 +59,16 @@ func (c controller) GroupCommandChannel(id string) chan string {
 	return commands
 }
 
-func (c controller) GroupNameIDMapping() map[string]string {
+func (c controller) GroupNameCommandChannels() map[string]chan string {
+	channels := make(map[string]chan string)
+
+	for groupName, groupID := range c.groupNameIDMapping() {
+		channels[groupName] = c.GroupCommandChannel(groupID)
+	}
+	return channels
+}
+
+func (c controller) groupNameIDMapping() map[string]string {
 	outputMap := make(map[string]string)
 
 	req, _ := http.NewRequest("GET", c.hueGroupListURL(), nil)
