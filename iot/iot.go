@@ -2,12 +2,13 @@ package iot
 
 import (
 	"fmt"
+	"github.com/eclipse/paho.mqtt.golang"
 	"time"
 )
 
 // MessageChannel subscribes to a topic and returns a channel of strings.
 // Messages received on the topic deliver their JSON string payload to the channel.
-func MessageChannel(client MqttClient, topic string) (chan string, error) {
+func MessageChannel(client mqtt.Client, topic string) (chan string, error) {
 	messageChan := make(chan string)
 
 	token := client.Connect()
@@ -18,7 +19,7 @@ func MessageChannel(client MqttClient, topic string) (chan string, error) {
 		return messageChan, err
 	}
 
-	callback := func(c MqttClient, m MqttMessage) {
+	callback := func(c mqtt.Client, m mqtt.Message) {
 		messageChan <- string(m.Payload())
 	}
 
