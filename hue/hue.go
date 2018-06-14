@@ -17,8 +17,6 @@ var httpClient = &http.Client{
 type LightController interface {
 	GroupOn(string)
 	GroupOff(string)
-	GroupCommandChannel(string) chan string
-	GroupNameCommandChannels() map[string]chan string
 }
 
 // NewLightController returns a LightController with info about the HUE bridge
@@ -42,30 +40,6 @@ func (c controller) GroupOff(id string) {
 	url := c.hueGroupActionURL(id)
 	body := hueActionOffJSONBody()
 	c.hueMakeActionPutRequest(url, body)
-}
-
-func (c controller) GroupCommandChannel(id string) chan string {
-	commands := make(chan string)
-	go func() {
-		for cmd := range commands {
-			switch cmd {
-			case "on":
-				c.GroupOn(id)
-			case "off":
-				c.GroupOff(id)
-			}
-		}
-	}()
-	return commands
-}
-
-func (c controller) GroupNameCommandChannels() map[string]chan string {
-	channels := make(map[string]chan string)
-
-	for groupName, groupID := range c.groupNameIDMapping() {
-		channels[groupName] = c.GroupCommandChannel(groupID)
-	}
-	return channels
 }
 
 func (c controller) groupNameIDMapping() map[string]string {
