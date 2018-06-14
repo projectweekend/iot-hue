@@ -7,7 +7,7 @@ import (
 )
 
 // MessageChannel subscribes to a topic and returns a channel of strings.
-// Messages received on the topic deliver their JSON string payload to the channel.
+// Messages received on the topic deliver its string payload to the channel.
 func MessageChannel(client mqtt.Client, topic string) (chan string, error) {
 	messageChan := make(chan string)
 
