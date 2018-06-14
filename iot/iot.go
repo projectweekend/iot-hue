@@ -1,10 +1,32 @@
 package iot
 
 import (
+	"crypto/tls"
 	"fmt"
 	"github.com/eclipse/paho.mqtt.golang"
+	"github.com/satori/go.uuid"
 	"time"
 )
+
+func NewClient(host, certPath, keyPath string) (mqtt.Client, error) {
+	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
+	connOptions := mqtt.NewClientOptions()
+	connOptions.SetClientID(u.String())
+	connOptions.SetMaxReconnectInterval(1 * time.Second)
+	connOptions.SetTLSConfig(&tls.Config{Certificates: []tls.Certificate{cert}})
+	connOptions.AddBroker(host)
+
+	return mqtt.NewClient(connOptions), nil
+}
 
 // MessageChannel subscribes to a topic and returns a channel of strings.
 // Messages received on the topic deliver its string payload to the channel.
