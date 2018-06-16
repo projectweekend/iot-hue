@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// NewClient returns a configured mqtt.Client
 func NewClient(host, certPath, keyPath string) (mqtt.Client, error) {
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
@@ -30,7 +31,7 @@ func NewClient(host, certPath, keyPath string) (mqtt.Client, error) {
 
 // MessageChannel subscribes to a topic and returns a channel of strings.
 // Messages received on the topic deliver its string payload to the channel.
-func MessageChannel(client mqtt.Client, topic string) (chan string, error) {
+func MessageChannel(client mqtt.Client, topic string) (<-chan string, error) {
 	messageChan := make(chan string)
 
 	token := client.Connect()
