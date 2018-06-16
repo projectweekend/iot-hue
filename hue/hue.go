@@ -17,17 +17,22 @@ var httpClient = &http.Client{
 type LightController interface {
 	GroupOn(string)
 	GroupOff(string)
+	HandleCommand(string)
 }
 
 // NewLightController returns a LightController with info about the HUE bridge
 func NewLightController(username, host string) LightController {
-	c := controller{username, host}
+	c := controller{}
+	c.username = username
+	c.host = host
+	c.groupIDForName = c.groupNameIDMapping()
 	return c
 }
 
 type controller struct {
-	username string
-	host     string
+	username       string
+	host           string
+	groupIDForName map[string]string
 }
 
 func (c controller) GroupOn(id string) {
@@ -40,6 +45,21 @@ func (c controller) GroupOff(id string) {
 	url := c.hueGroupActionURL(id)
 	body := hueActionOffJSONBody()
 	c.hueMakeActionPutRequest(url, body)
+}
+
+func (c controller) HandleCommand(cmd string) {
+	parts := strings.Split(cmd, ":")
+	groupID, found := c.groupIDForName[parts[0]]
+	if found == false {
+		groupID = parts[0]
+	}
+	action := parts[1]
+	switch action {
+	case "on":
+		c.GroupOn(groupID)
+	case "off":
+		c.GroupOff(groupID)
+	}
 }
 
 func (c controller) groupNameIDMapping() map[string]string {
